@@ -1,3 +1,9 @@
+# Questo file è un esempio di configurazione per Liquidsoap
+# per creare uno stream HLS da una sorgente audio.
+
+# Samuele Maria Orsini - 13/06/2025
+
+
 # Definisco l'ingresso audio
 radio = input.http("https://streaming.poliradio.it/test")
 
