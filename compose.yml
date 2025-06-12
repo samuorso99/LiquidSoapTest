@@ -1,0 +1,14 @@
+services:
+  liquidsoap:
+    command: 
+      - /conf/live.liq
+    container_name: liquidsoap-myradio
+    image: savonet/liquidsoap:v2.3.3
+    networks: 
+      - default
+    restart: unless-stopped
+    ports:
+      - 192.168.1.60:8000:8000
+    volumes:
+      - ./Codice:/conf/:ro
+      - ./data_hls:/tmp/
