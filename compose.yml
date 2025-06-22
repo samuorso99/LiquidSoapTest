@@ -12,3 +12,10 @@ services:
     volumes:
       - ./Codice:/conf/:ro
       - ./data_hls:/tmp/
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./data_hls:/usr/share/nginx/html/live
+      - ./Codice/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "8080:80"
