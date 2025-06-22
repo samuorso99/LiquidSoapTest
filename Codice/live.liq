@@ -64,6 +64,13 @@ end
 #                 "/tmp/hls", streams, radio) 
 
 # Con questa funzione posso fare direttamente da Liquidsoap streaming HLS (senza nginx)
-output.harbor.hls(port=8000, fallible=true, on_file_change=on_file_change, segment_duration  = 2., segments = 10, segments_overhead = 5, path="radio/", [("mp3", %mp3)], radio)
+output.harbor.hls(port=8000, 
+                  fallible=true, 
+                  on_file_change=on_file_change, 
+                  segment_duration  = 2., 
+                  segments = 10, 
+                  segments_overhead = 5, 
+                  path="radio/", 
+                  [("mp3", %mp3)], radio)
 
 #TEST 
