@@ -55,23 +55,24 @@ def on_file_change(~state,fname) =
 end
 
 # Creo l'output HLS (vedere help/book per i parametri) #### errore linea 46 ####
-# output.file.hls(fallible=true,
-#                 playlist          = "live.m3u8",
-#                 segment_duration  = 2.,
-#                 segments          = 10,
-#                 segments_overhead = 5,
-#                 on_file_change    = on_file_change,
-#                 persist_at        = "state.config",
-#                 "/tmp/hls", streams, radio) 
+output.file.hls(fallible=true,
+                playlist          = "live.m3u8",
+                segment_duration  = 5.,
+                segments          = 60,
+                segments_overhead = 12,
+                on_file_change    = on_file_change,
+                persist_at        = "state.config",
+                "/tmp/hls", streams, radio) 
 
 # Con questa funzione posso fare direttamente da Liquidsoap streaming HLS (senza nginx)
-output.harbor.hls(port=8000, 
-                  fallible=true, 
-                  on_file_change=on_file_change, 
-                  segment_duration  = 2., 
-                  segments = 10, 
-                  segments_overhead = 5, 
-                  path="radio/", 
-                  [("mp3", %mp3)], radio)
+# ATTENZIONE: questa funzione è ancora in fase di sviluppo e potrebbe non funzionare correttamente, genera "glitch" sul cambio di segmento
+# output.harbor.hls(port=8000, 
+#                   fallible=true, 
+#                   on_file_change=on_file_change, 
+#                   segment_duration  = 2., 
+#                   segments = 10, 
+#                   segments_overhead = 5, 
+#                   path="radio/", 
+#                   [("mp3", %mp3)], radio)
 
 #TEST 

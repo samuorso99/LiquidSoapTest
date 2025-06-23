@@ -15,7 +15,8 @@ services:
   nginx:
     image: nginx:alpine
     volumes:
-      - ./data_hls:/usr/share/nginx/html/live
+      - ./data_hls/hls:/usr/share/nginx/html/live
       - ./Codice/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./Codice/player.html:/usr/share/nginx/html/player.html:ro
     ports:
-      - "8080:80"
+      - 192.168.1.60:8080:8080
