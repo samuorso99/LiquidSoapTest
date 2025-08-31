@@ -48,8 +48,7 @@ end
 end >#
 
 def on_file_change(~state,fname) =
-  if state == "closed" and file.extension(fname) != '.m3u8' then
-      log.critical(label="test", "Test log on_file_change")
+  if state == "created" and file.extension(fname) != '.m3u8' then
       log.critical(label="hls", "Segment #{fname} created")
   end
 end

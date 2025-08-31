@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -38,6 +38,89 @@
       });
     } else {
       alert("Your browser doesn't support HLS playback");
+    }
+  </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live Audio HLS with Seek</title>
+  <style>
+    #live-status {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: red;
+      color: white;
+      display: inline-block;
+    }
+    #live-status.live {
+      background: red;
+    }
+    #live-status.delayed {
+      background: gray;
+    }
+  </style>
+</head>
+<body>
+  <h1>Live Audio Stream with Seek</h1>
+  <video id="video" controls width="640" height="60"></video>
+  <div id="live-status" class="delayed">Not Live</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+    const liveStatus = document.getElementById('live-status');
+    const streamUrl = '/live/stream.m3u8';
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        liveSyncDuration: 6
+      });
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log("Manifest loaded");
+        video.play();
+      });
+
+      hls.on(Hls.Events.LEVEL_UPDATED, () => {
+        checkLiveStatus();
+      });
+
+      video.addEventListener('timeupdate', () => {
+        checkLiveStatus();
+      });
+
+      function checkLiveStatus() {
+        if (!hls.liveSyncPosition) return;
+
+        const delta = Math.abs(video.currentTime - hls.liveSyncPosition);
+        if (delta < 2) {
+          liveStatus.textContent = 'LIVE';
+          liveStatus.className = 'live';
+        } else {
+          liveStatus.textContent = 'Not Live';
+          liveStatus.className = 'delayed';
+        }
+      }
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS.js error", data);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = streamUrl;
+      video.addEventListener('loadedmetadata', () => {
+        video.play();
+      });
+      // Native HLS live detection would need additional logic
+    } else {
+      alert("Your browser doesn't support HLS");
     }
   </script>
 </body>
