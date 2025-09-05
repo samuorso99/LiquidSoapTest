@@ -1,0 +1,512 @@
+HELP output.file.hls 
+docker exec liquidsoap-myradio liquidsoap -h output.file.hls
+
+Output the source stream to an HTTP live stream served from a local directory.
+
+Type: (?id : string?, ?dir_perm : int, ?extra_tags : [string], ?fallible : bool,
+ ?on_file_change : ((state : string, string) -> unit),
+ ?on_start : (() -> unit), ?on_stop : (() -> unit), ?perm : int,
+ ?persist_at : string?, ?playlist : string, ?prefix : string,
+ ?register_telnet : bool, ?segment_duration : float,
+ ?segment_name : ((
+                   {
+                     duration : float,
+                     extname : string,
+                     position : int,
+                     stream_name : string,
+                     ticks : int
+                   }) -> string),
+ ?segments : int, ?segments_overhead : int?, ?start : bool,
+ ?strict_persist : bool, ?temp_dir : string?,
+ ?main_playlist_writer : ((extra_tags : [string], prefix : string,
+                           version : int,
+                           [string
+                            .{
+                              bandwidth : int,
+                              codecs : string,
+                              video_size? : int * int
+                            }]) -> string?)?,
+ string,
+ [string * format('a)
+  .{
+    bandwidth? : int,
+    codecs? : string,
+    extname? : string,
+    extra_tags? : [string],
+    id3? : bool,
+    id3_version? : int,
+    replay_id3? : bool,
+    video_size? : int * int
+  }],
+ source('a)) -> unit
+
+Category: Source / Output
+
+Arguments:
+
+ * dir_perm : int (default: 511)
+     Permission of the directories if some have to be created, up to umask.
+
+ * extra_tags : [string] (default: [])
+     Extra tags to insert into the main playlist.
+
+ * fallible : bool (default: false)
+     Allow the child source to fail, in which case the output will be stopped
+     until the source is available again.
+
+ * id : string? (default: null)
+     Force the value of the source ID.
+
+ * main_playlist_writer : ((extra_tags : [string], prefix : string, version : int,
+  [string.{bandwidth : int, codecs : string, video_size? : int * int}]) ->
+ string?)? (default: <fun>)
+     Main playlist writer. Main playlist writing is disabled when `null` or
+     when returning `null`.
+
+ * on_file_change : (state : string, string) -> unit (default: fun (~state=_,_) -> ())
+     Callback executed when a file changes. `state` is one of: `"created"`,
+     `"updated"` or `"deleted"`, second argument is file path. Typical use:
+     sync file with a CDN
+
+ * on_start : () -> unit (default: {()})
+     Callback executed when output starts.
+
+ * on_stop : () -> unit (default: {()})
+     Callback executed when output stops.
+
+ * perm : int (default: 438)
+     Permission of the created files, up to umask.
+
+ * persist_at : string? (default: null)
+     Location of the configuration file used to restart the output. Relative
+     paths are assumed to be with regard to the directory for generated file.
+
+ * playlist : string (default: "stream.m3u8")
+     Playlist name (m3u8 extension is recommended).
+
+ * prefix : string (default: "")
+     Prefix for each files in playlists.
+
+ * register_telnet : bool (default: true)
+     Register telnet commands for this output.
+
+ * segment_duration : float (default: 10.0)
+     Segment duration (in seconds).
+
+ * segment_name : (
+ {
+   duration : float,
+   extname : string,
+   position : int,
+   stream_name : string,
+   ticks : int
+ }) -> string (default: <fun>)
+     Segment name. Default: `fun (metadata) -> "#{metadata.stream_name}_#{metadata.position}.#{metadata.extname}"`
+
+ * segments : int (default: 10)
+     Number of segments per playlist.
+
+ * segments_overhead : int? (default: 5)
+     Number of segments to keep after they have been featured in the live playlist.
+     Set to `null` to disable.
+
+ * start : bool (default: true)
+     Start output as soon as it is available.
+
+ * strict_persist : bool (default: false)
+     Fail if an invalid saved state exists.
+
+ * temp_dir : string? (default: null)
+     Temporary directory used for writing files. This should be in the same
+     partition or device as the final directory to guarantee atomic file operations.
+     Use the same directory as the HLS files if `null`.
+
+ * (unlabeled) : string
+     List of specifications for each stream: (name, format).
+
+ * (unlabeled) : [string * format('a)
+ .{
+   bandwidth? : int,
+   codecs? : string,
+   extname? : string,
+   extra_tags? : [string],
+   id3? : bool,
+   id3_version? : int,
+   replay_id3? : bool,
+   video_size? : int * int
+ }]
+     Directory for generated files.
+
+ * (unlabeled) : source('a)
+
+
+Methods:
+
+ * buffered : () -> [string * float]
+     Length of buffered data.
+
+ * clock : clock
+     The source's clock
+
+ * duration : () -> float
+     Estimation of the duration of the current track.
+
+ * elapsed : () -> float
+     Elapsed time in the current track.
+
+ * fallible : bool
+     Indicate if a source may fail, i.e. may not be ready to stream.
+
+ * id : () -> string
+     Identifier of the source.
+
+ * insert_tag : (string) -> unit
+     Insert the same tag into all the streams
+
+ * is_active : () -> bool
+     `true` if the source is active, i.e. it is continuously animated by its
+     own clock whenever it is ready. Typically, `true` for outputs and sources
+     such as `input.http`.
+
+ * is_ready : () -> bool
+     Indicate if a source is ready to stream. This does not mean that the source
+     is currently streaming, just that its resources are all properly initialized.
+
+ * is_started : () -> bool
+     `true` if the output or source is started.
+
+ * is_up : () -> bool
+     Indicate that the source can be asked to produce some data at any time.
+     This is `true` when the source is currently being used or if it could be
+     used at any time, typically inside a `switch` or `fallback`.
+
+ * last_metadata : () -> [string * string]?
+     Return the last metadata from the source.
+
+ * log : {level : (() -> int).{set : (int) -> unit}}
+     Get or set the source's log level, from `1` to `5`.
+
+ * on_metadata : ((([string * string]) -> unit)) -> unit
+     Call a given handler on metadata packets.
+
+ * on_shutdown : ((() -> unit)) -> unit
+     Register a function to be called when source shuts down.
+
+ * on_track : ((([string * string]) -> unit)) -> unit
+     Call a given handler on new tracks.
+
+ * on_wake_up : ((() -> unit)) -> unit
+     Register a function to be called after the source is asked to get ready.
+     This is when, for instance, the source's final ID is set.
+
+ * register_command : (?usage : string?, description : string, string, ((string) -> string)) ->
+unit
+     Register a server command for this source. Command is registered under
+     the source's id namespace when it gets up and de-registered when it gets
+     down.
+
+ * remaining : () -> float
+     Estimation of remaining time in the current track.
+
+ * reset_last_metadata_on_track : (() -> bool).{set : (bool) -> unit}
+     If `true`, the source's `last_metadata` is reset on each new track. If
+     a metadata is present along with the track mark, then it becomes the new
+     `last_metadata`, otherwise, `last_metadata becomes `null`.
+
+ * seek : (float) -> float
+     Seek forward, in seconds (returns the amount of time effectively seeked).
+
+ * self_sync : () -> bool
+     Is the source currently controlling its own real-time loop.
+
+ * shutdown : () -> unit
+     Shutdown the output or source.
+
+ * skip : () -> unit
+     Skip to the next track.
+
+ * start : () -> unit
+     Ask the source or output to start.
+
+ * stop : () -> unit
+     Ask the source or output to stop.
+
+ * streams : () ->
+[
+ {
+   bandwidth : int,
+   codecs : string,
+   discontinuity_count : int,
+   encoder : format('A),
+   extname : string,
+   extra_tags : [string],
+   id3_enabled : bool,
+   insert_tag : (string) -> unit,
+   name : string,
+   replay_id3 : bool,
+   video_size : 
+   {height : int, width : int
+   }?
+ }]
+     Output streams
+
+ * time : () -> float
+     Get a source's time, based on its assigned clock.
+
+###############################################################################################################################################
+
+docker exec liquidsoap-myradio liquidsoap -h output.file    
+
+Output the source stream to a file.
+
+Type: (?id : string?, ?append : bool, ?dir_perm : int,
+ ?export_cover_metadata : bool, ?fallible : bool, ?flush : bool,
+ ?on_close : ((string) -> unit), ?on_reopen : (() -> unit),
+ ?on_start : (() -> unit), ?on_stop : (() -> unit), ?perm : int,
+ ?register_telnet : bool, ?reopen_delay : {float},
+ ?reopen_on_error : ((error
+                      .{
+                        kind : string,
+                        message : string,
+                        trace : [
+                                 {
+                                   cstart : int,
+                                   cstop : int,
+                                   filename : string,
+                                   lstart : int,
+                                   lstop : int,
+                                   to_string : (?prefix : string) -> string
+                                 }]
+                      }?) -> float?),
+ ?reopen_on_metadata : (([string * string]) -> bool),
+ ?reopen_when : (() -> bool), ?start : bool, format('a), {string},
+ source('a)) -> unit
+
+Category: Source / Output
+
+Arguments:
+
+ * append : bool (default: false)
+     Do not truncate but append in the file if it exists.
+
+ * dir_perm : int (default: 511)
+     Permission of the directories if some have to be created, up to umask.
+     Although you can enter values in octal notation (0oXXX) they will be displayed
+     in decimal (for instance, 0o777 = 7×8^2 + 7×8 + 7 = 511).
+
+ * export_cover_metadata : bool (default: true)
+     Export cover metadata.
+
+ * fallible : bool (default: false)
+     Allow the child source to fail, in which case the output will be stopped
+     until the source is available again.
+
+ * flush : bool (default: false)
+     Perform a flush after each write.
+
+ * id : string? (default: null)
+     Force the value of the source ID.
+
+ * on_close : (string) -> unit (default: fun (_) -> ())
+     This function will be called for each file, after that it is finished and
+     closed. The filename will be passed as argument.
+
+ * on_reopen : () -> unit (default: {()})
+     Callback executed when the output is reopened.
+
+ * on_start : () -> unit (default: {()})
+     Callback executed when output starts.
+
+ * on_stop : () -> unit (default: {()})
+     Callback executed when output stops.
+
+ * perm : int (default: 438)
+     Permission of the file if it has to be created, up to umask. You can and
+     should write this number in octal notation: 0oXXX. The default value is
+     however displayed in decimal (0o666 = 6×8^2 + 6×8 + 6 = 438).
+
+ * register_telnet : bool (default: true)
+     Register telnet commands for this output.
+
+ * reopen_delay : {float} (default: 120.0)
+     Prevent re-opening within that delay, in seconds. Only applies to `reopen_when`.
+
+ * reopen_on_error : (error
+ .{
+   kind : string,
+   message : string,
+   trace : [
+            {
+              cstart : int,
+              cstop : int,
+              filename : string,
+              lstart : int,
+              lstop : int,
+              to_string : (?prefix : string) -> string
+            }]
+ }?) -> float? (default: <fun>)
+     Callback called when there is an error. Error is raised when returning
+     `null`. Otherwise, the file is reopened after the returned value, in seconds.
+
+ * reopen_on_metadata : ([string * string]) -> bool (default: fun (_) -> false)
+     Callback called on metadata. If returned value is `true`, the file is reopened.
+
+ * reopen_when : () -> bool (default: {false})
+     Callback called on each frame. If returned value is `true`, the file is
+     reopened.
+
+ * start : bool (default: true)
+     Start output as soon as it is available.
+
+ * (unlabeled) : format('a)
+     Encoding format.
+
+ * (unlabeled) : {string}
+     Filename where to output the stream.
+
+ * (unlabeled) : source('a)
+
+
+Methods:
+
+ * buffered : () -> [string * float]
+     Length of buffered data.
+
+ * clock : clock
+     The source's clock
+
+ * duration : () -> float
+     Estimation of the duration of the current track.
+
+ * elapsed : () -> float
+     Elapsed time in the current track.
+
+ * fallible : bool
+     Indicate if a source may fail, i.e. may not be ready to stream.
+
+ * id : () -> string
+     Identifier of the source.
+
+ * is_active : () -> bool
+     `true` if the source is active, i.e. it is continuously animated by its
+     own clock whenever it is ready. Typically, `true` for outputs and sources
+     such as `input.http`.
+
+ * is_ready : () -> bool
+     Indicate if a source is ready to stream. This does not mean that the source
+     is currently streaming, just that its resources are all properly initialized.
+
+ * is_started : () -> bool
+     `true` if the output or source is started.
+
+ * is_up : () -> bool
+     Indicate that the source can be asked to produce some data at any time.
+     This is `true` when the source is currently being used or if it could be
+     used at any time, typically inside a `switch` or `fallback`.
+
+ * last_metadata : () -> [string * string]?
+     Return the last metadata from the source.
+
+ * log : {level : (() -> int).{set : (int) -> unit}}
+     Get or set the source's log level, from `1` to `5`.
+
+ * on_metadata : ((([string * string]) -> unit)) -> unit
+     Call a given handler on metadata packets.
+
+ * on_shutdown : ((() -> unit)) -> unit
+     Register a function to be called when source shuts down.
+
+ * on_track : ((([string * string]) -> unit)) -> unit
+     Call a given handler on new tracks.
+
+ * on_wake_up : ((() -> unit)) -> unit
+     Register a function to be called after the source is asked to get ready.
+     This is when, for instance, the source's final ID is set.
+
+ * register_command : (?usage : string?, description : string, string, ((string) -> string)) ->
+unit
+     Register a server command for this source. Command is registered under
+     the source's id namespace when it gets up and de-registered when it gets
+     down.
+
+ * remaining : () -> float
+     Estimation of remaining time in the current track.
+
+ * reopen : () -> unit
+     Reopen the output pipe. The actual reopening happens the next time the
+     output has some data to output.
+
+ * reset_last_metadata_on_track : (() -> bool).{set : (bool) -> unit}
+     If `true`, the source's `last_metadata` is reset on each new track. If
+     a metadata is present along with the track mark, then it becomes the new
+     `last_metadata`, otherwise, `last_metadata becomes `null`.
+
+ * seek : (float) -> float
+     Seek forward, in seconds (returns the amount of time effectively seeked).
+
+ * self_sync : () -> bool
+     Is the source currently controlling its own real-time loop.
+
+ * shutdown : () -> unit
+     Shutdown the output or source.
+
+ * skip : () -> unit
+     Skip to the next track.
+
+ * start : () -> unit
+     Ask the source or output to start.
+
+ * stop : () -> unit
+     Ask the source or output to stop.
+
+ * time : () -> float
+     Get a source's time, based on its assigned clock.
+
+
+
+###################################################################
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HLS Live with Seeking</title>
+</head>
+<body>
+  <h1>Live Stream with Seek</h1>
+  <video id="video" controls width="640" height="360"></video>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+    const streamUrl = 'http://192.168.1.60:8080/live/live.m3u8'; // adjust as needed
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        // optional: reduce latency a bit
+        liveSyncDuration: 6,  // target ~1-2 segments behind live
+        maxLiveSyncPlaybackRate: 1.5 // allow catch-up if lagging
+      });
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        console.log("Manifest loaded, ready to play");
+        video.play();
+      });
+
+      hls.on(Hls.Events.ERROR, function(event, data) {
+        console.error("HLS.js error", data);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS (Safari, iOS)
+      video.src = streamUrl;
+      video.addEventListener('loadedmetadata', function() {
+        video.play();
+      });
+    } else {
+      alert("Your browser doesn't support HLS playback");
+    }
+  </script>
+</body>
+</html> -->
+
